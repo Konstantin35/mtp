@@ -5,6 +5,7 @@ import (
 	"log"
 	_math "math"
 	"math/big"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -405,7 +406,12 @@ func (u *BlockUnlocker) calculateRewards(block *storage.BlockData) (*big.Rat, *b
 		return nil, nil, nil, nil, err
 	}
 
-	rewards := calculateRewardsForShares(shares, block.TotalShares, minersProfit)
+	totalShares := int64(0)
+	for _, val := range shares {
+		totalShares += val
+	}
+
+	rewards := calculateRewardsForShares(shares, totalShares, minersProfit)
 
 	if block.ExtraReward != nil {
 		extraReward := new(big.Rat).SetInt(block.ExtraReward)
@@ -425,7 +431,7 @@ func (u *BlockUnlocker) calculateRewards(block *storage.BlockData) (*big.Rat, *b
 		fee, _ := strconv.ParseInt(poolProfit.FloatString(0), 10, 64)
 		rewards[u.config.PoolFeeAddress] += fee
 	}
-
+	
 	return revenue, minersProfit, poolProfit, rewards, nil
 }
 

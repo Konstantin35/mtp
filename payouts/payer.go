@@ -7,12 +7,14 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"sync"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
-	"github.com/sammy007/open-ethereum-pool/rpc"
-	"github.com/sammy007/open-ethereum-pool/storage"
-	"github.com/sammy007/open-ethereum-pool/util"
+	"github.com/ellaism/open-ethereum-pool/rpc"
+	"github.com/ellaism/open-ethereum-pool/storage"
+	"github.com/ellaism/open-ethereum-pool/util"
+	
 )
 
 const txCheckInterval = 5 * time.Second
@@ -30,6 +32,7 @@ type PayoutsConfig struct {
 	// In Shannon
 	Threshold int64 `json:"threshold"`
 	BgSave    bool  `json:"bgsave"`
+	ConcurrentTx int    `json:"concurrentTx"`
 	Account   string
 	Password  string
 }
@@ -231,6 +234,7 @@ func (u *PayoutsProcessor) XXprocess() {
 func (u *PayoutsProcessor) process() {
 	if u.halt {
 		log.Println("Payments suspended due to last critical error:", u.lastFail)
+		os.Exit(1)
 		return
 	}
 	mustPay := 0
